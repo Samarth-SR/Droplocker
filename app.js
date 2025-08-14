@@ -1,445 +1,400 @@
-// DropLocker JavaScript Application
 class DropLockerApp {
     constructor() {
+        // state
         this.currentFileId = null;
+        this.currentFileExt = '';
+        this.currentFileName = '';
         this.uploadInProgress = false;
-        this.init();
+        this.downloadInfo = null; // <-- new: store info for download-handling
+
+        // init
+        document.addEventListener('DOMContentLoaded', () => {
+            this.cacheElements();
+            this.setupListeners();
+            this.checkDownloadLinkOnLoad();
+        });
     }
 
-    init() {
-        this.setupEventListeners();
-        this.checkDownloadLink();
+    cacheElements() {
+        // Upload + progress
+        this.dropZone = document.getElementById('dropZone');
+        this.fileInput = document.getElementById('fileInput');
+        this.progressSection = document.getElementById('progressSection');
+
+        this.fileNameLabel = document.getElementById('fileName');
+        this.fileSizeLabel = document.getElementById('fileSize');
+
+        this.compressProgress = document.getElementById('compressProgress');
+        this.encryptProgress = document.getElementById('encryptProgress');
+        this.uploadProgress = document.getElementById('uploadProgress');
+
+        // Link / generation
+        this.linkSection = document.getElementById('linkSection');
+        this.generateLinkBtn = document.getElementById('generateLink');
+        this.shareLinkInput = document.getElementById('shareLink');
+        this.copyLinkBtn = document.getElementById('copyLink');
+        this.finalLinkBlock = document.getElementById('finalLink');
+        this.newUploadBtn = document.getElementById('newUpload');
+        this.expirySelect = document.getElementById('expiryTime');
+        this.passwordProtect = document.getElementById('passwordProtect');
+        this.filePassword = document.getElementById('filePassword');
+
+        // Download UI
+        this.downloadSection = document.getElementById('downloadSection');
+        this.downloadBtn = document.getElementById('downloadBtn');
+        this.downloadFileName = document.getElementById('downloadFileName');
+        this.downloadFileInfo = document.getElementById('downloadFileInfo');
+        this.passwordSection = document.getElementById('passwordSection');
+        this.downloadPassword = document.getElementById('downloadPassword');
+
+        // stats elements
+        this.originalSize = document.getElementById('originalSize');
+        this.compressedSize = document.getElementById('compressedSize');
+        this.compressionRatio = document.getElementById('compressionRatio');
+
+        // toast container
+        this.toastContainer = document.getElementById('toastContainer');
     }
 
-    setupEventListeners() {
-        // File upload
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
-        const passwordProtect = document.getElementById('passwordProtect');
-        const filePassword = document.getElementById('filePassword');
-        const generateLink = document.getElementById('generateLink');
-        const copyLink = document.getElementById('copyLink');
-        const newUpload = document.getElementById('newUpload');
-        const downloadBtn = document.getElementById('downloadBtn');
-
-        // Drop zone events
-        if (dropZone && fileInput) {
-            dropZone.addEventListener('click', () => {
-                if (!this.uploadInProgress) {
-                    fileInput.click();
-                }
+    setupListeners() {
+        // Drag & drop + click
+        if (this.dropZone && this.fileInput) {
+            this.dropZone.addEventListener('click', () => {
+                if (!this.uploadInProgress) this.fileInput.click();
             });
 
-            dropZone.addEventListener('dragover', (e) => {
+            this.dropZone.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                dropZone.classList.add('dragover');
+                this.dropZone.classList.add('dragover');
             });
 
-            dropZone.addEventListener('dragleave', () => {
-                dropZone.classList.remove('dragover');
+            this.dropZone.addEventListener('dragleave', () => {
+                this.dropZone.classList.remove('dragover');
             });
 
-            dropZone.addEventListener('drop', (e) => {
+            this.dropZone.addEventListener('drop', (e) => {
                 e.preventDefault();
-                dropZone.classList.remove('dragover');
-                
+                this.dropZone.classList.remove('dragover');
                 if (e.dataTransfer.files.length > 0 && !this.uploadInProgress) {
                     this.handleFileUpload(e.dataTransfer.files[0]);
                 }
             });
 
-            fileInput.addEventListener('change', (e) => {
+            this.fileInput.addEventListener('change', (e) => {
                 if (e.target.files.length > 0) {
                     this.handleFileUpload(e.target.files[0]);
                 }
             });
         }
 
-        // Password protection toggle
-        if (passwordProtect && filePassword) {
-            passwordProtect.addEventListener('change', () => {
-                filePassword.classList.toggle('hidden', !passwordProtect.checked);
-                if (!passwordProtect.checked) {
-                    filePassword.value = '';
-                }
+        // password toggle
+        if (this.passwordProtect && this.filePassword) {
+            this.passwordProtect.addEventListener('change', () => {
+                this.filePassword.classList.toggle('hidden', !this.passwordProtect.checked);
+                if (!this.passwordProtect.checked) this.filePassword.value = '';
             });
         }
 
-        // Generate link button
-        if (generateLink) {
-            generateLink.addEventListener('click', () => {
-                this.generateSecureLink();
-            });
-        }
-
-        // Copy link button
-        if (copyLink) {
-            copyLink.addEventListener('click', () => {
-                this.copyLinkToClipboard();
-            });
-        }
-
-        // New upload button
-        if (newUpload) {
-            newUpload.addEventListener('click', () => {
-                this.resetToUpload();
-            });
-        }
-
-        // Download button
-        if (downloadBtn) {
-            downloadBtn.addEventListener('click', () => {
-                this.downloadFile();
-            });
-        }
+        // buttons
+        if (this.generateLinkBtn) this.generateLinkBtn.addEventListener('click', () => this.generateSecureLink());
+        if (this.copyLinkBtn) this.copyLinkBtn.addEventListener('click', () => this.copyLinkToClipboard());
+        if (this.newUploadBtn) this.newUploadBtn.addEventListener('click', () => this.resetToUpload());
+        // downloadBtn interaction is handled after info fetch (see checkDownloadLinkOnLoad)
     }
 
+    // Upload with progress 
     async handleFileUpload(file) {
         if (this.uploadInProgress) return;
-        
         this.uploadInProgress = true;
-        
+
+        // UI
+        this.showProgressSection(file);
+
         try {
-            // Update UI to show progress
-            this.showProgressSection(file);
-            
-            // Create form data
+            // Simulate compress step
+            for (let i = 0; i <= 100; i += 20) {
+                this.setProgressBar(this.compressProgress, i);
+                await this.delay(60);
+            }
+
+            // Simulate encrypt step
+            for (let i = 0; i <= 100; i += 25) {
+                this.setProgressBar(this.encryptProgress, i);
+                await this.delay(60);
+            }
+
+            // Real upload using XHR to get reliable progress
             const formData = new FormData();
             formData.append('file', file);
 
-            // Simulate compression progress
-            this.updateProgress('compress', 0);
-            await this.delay(500);
-            
-            for (let i = 0; i <= 100; i += 10) {
-                this.updateProgress('compress', i);
-                await this.delay(100);
-            }
+            await new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', 'php/upload.php', true);
 
-            // Start upload with compression
-            this.updateProgress('encrypt', 0);
-            this.updateProgress('upload', 0);
+                xhr.upload.onprogress = (event) => {
+                    if (event.lengthComputable) {
+                        const percent = Math.round((event.loaded / event.total) * 100);
+                        this.setProgressBar(this.uploadProgress, percent);
+                    }
+                };
 
-            const response = await fetch('php/upload.php', {
-                method: 'POST',
-                body: formData
+                xhr.onerror = () => {
+                    reject(new Error('Network error during upload'));
+                };
+
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            const res = JSON.parse(xhr.responseText);
+                            if (res.success) {
+                                // save metadata
+                                this.currentFileId = res.fileId;
+                                this.currentFileExt = res.extension || '';
+                                this.currentFileName = res.originalName || file.name;
+
+                                // show link generation area and stats
+                                this.showLinkSection(res);
+                                resolve();
+                            } else {
+                                reject(new Error(res.error || 'Upload failed'));
+                            }
+                        } catch (e) {
+                            reject(new Error('Invalid server response'));
+                        }
+                    } else {
+                        reject(new Error('Upload failed: ' + xhr.status + ' ' + xhr.statusText));
+                    }
+                };
+
+                xhr.send(formData);
             });
 
-            // Simulate encryption progress
-            for (let i = 0; i <= 100; i += 20) {
-                this.updateProgress('encrypt', i);
-                await this.delay(150);
-            }
-
-            // Simulate upload progress
-            for (let i = 0; i <= 100; i += 25) {
-                this.updateProgress('upload', i);
-                await this.delay(200);
-            }
-
-            const result = await response.json();
-
-            if (result.success) {
-                this.currentFileId = result.fileId;
-                this.showLinkSection(result);
-            } else {
-                throw new Error(result.error || 'Upload failed');
-            }
-
-        } catch (error) {
-            this.showToast('Upload failed: ' + error.message, 'error');
+            this.showToast('Upload completed', 'success');
+        } catch (err) {
+            this.showToast('Upload failed: ' + err.message, 'error');
             this.resetToUpload();
         } finally {
             this.uploadInProgress = false;
         }
     }
 
+    // show/hide UI helpers
     showProgressSection(file) {
-        // Hide upload section, show progress
-        document.getElementById('uploadSection').querySelector('.drop-zone').style.display = 'none';
-        
-        const progressSection = document.getElementById('progressSection');
-        progressSection.classList.remove('hidden');
+        if (this.progressSection) this.progressSection.classList.remove('hidden');
+        if (this.linkSection) this.linkSection.classList.add('hidden');
+        if (this.fileNameLabel) this.fileNameLabel.textContent = file.name;
+        if (this.fileSizeLabel) this.fileSizeLabel.textContent = this.formatFileSize(file.size);
 
-        // Update file info
-        document.getElementById('fileName').textContent = file.name;
-        document.getElementById('fileSize').textContent = this.formatFileSize(file.size);
+        // reset bars
+        this.setProgressBar(this.compressProgress, 0);
+        this.setProgressBar(this.encryptProgress, 0);
+        this.setProgressBar(this.uploadProgress, 0);
+
+        // hide final link until generated
+        if (this.finalLinkBlock) this.finalLinkBlock.classList.add('hidden');
     }
 
-    updateProgress(step, percentage) {
-        const progressBar = document.getElementById(step + 'Progress');
-        if (progressBar) {
-            progressBar.style.width = percentage + '%';
-        }
+    showLinkSection(res) {
+        if (this.progressSection) this.progressSection.classList.add('hidden');
+        if (this.linkSection) this.linkSection.classList.remove('hidden');
 
-        // Update step icon
-        const steps = document.querySelectorAll('.progress-step');
-        steps.forEach((stepEl, index) => {
-            const stepNames = ['compress', 'encrypt', 'upload'];
-            const stepIcon = stepEl.querySelector('.step-icon');
-            
-            if (stepNames[index] === step && percentage > 0) {
-                stepIcon.classList.add('active');
-            }
-        });
+        // update stats (upload.php returned sizes)
+        if (this.originalSize) this.originalSize.textContent = this.formatFileSize(res.originalSize || 0);
+        if (this.compressedSize) this.compressedSize.textContent = this.formatFileSize(res.compressedSize || 0);
+        if (this.compressionRatio) this.compressionRatio.textContent = (res.compressionRatio || 0).toFixed(1) + '%';
     }
 
-    showLinkSection(result) {
-        // Hide progress section, show link section
-        document.getElementById('progressSection').classList.add('hidden');
-        document.getElementById('linkSection').classList.remove('hidden');
-
-        // Update compression stats
-        document.getElementById('originalSize').textContent = this.formatFileSize(result.originalSize);
-        document.getElementById('compressedSize').textContent = this.formatFileSize(result.compressedSize);
-        document.getElementById('compressionRatio').textContent = result.compressionRatio.toFixed(1) + '%';
-
-        // Show algorithm used
-        if (result.algorithm) {
-            const algorithmInfo = document.createElement('div');
-            algorithmInfo.className = 'stat';
-            algorithmInfo.innerHTML = `
-                <span class="stat-label">Algorithm:</span>
-                <span class="stat-value">${result.algorithm}</span>
-            `;
-            document.querySelector('.compression-stats').appendChild(algorithmInfo);
-        }
+    setProgressBar(el, percent) {
+        if (!el) return;
+        el.style.width = Math.min(100, Math.max(0, percent)) + '%';
     }
 
     async generateSecureLink() {
-        if (!this.currentFileId) return;
+        if (!this.currentFileId) {
+            this.showToast('No uploaded file to create link for', 'error');
+            return;
+        }
+
+        // collect options
+        const expiry = parseInt(this.expirySelect?.value || '0', 10);
+        const passwordProtect = this.passwordProtect?.checked || false;
+        const password = passwordProtect ? (this.filePassword?.value || '') : null;
+        if (passwordProtect && !password) {
+            this.showToast('Please enter a password', 'error');
+            return;
+        }
+
+        const body = {
+            fileId: this.currentFileId,
+            extension: this.currentFileExt || '',
+            expiry: expiry,
+            password: password
+        };
 
         try {
-            const expiryTime = document.getElementById('expiryTime').value;
-            const passwordProtect = document.getElementById('passwordProtect').checked;
-            const password = document.getElementById('filePassword').value;
-
-            // Validate password if protection is enabled
-            if (passwordProtect && !password.trim()) {
-                this.showToast('Please enter a password', 'error');
-                return;
-            }
-
-            // Generate the secure link
-            const linkData = {
-                fileId: this.currentFileId,
-                expiryTime: parseInt(expiryTime),
-                password: passwordProtect ? password : null
-            };
-
-            const response = await fetch('php/generate_link.php', {
+            const resp = await fetch('php/generate_link.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(linkData)
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
             });
+            const json = await resp.json();
+            if (!json || !json.success) throw new Error(json?.error || 'Failed to generate link');
 
-            const result = await response.json();
+            // server returns `link` (UI link) and `directLink` (download.php link)
+            if (this.shareLinkInput) this.shareLinkInput.value = json.link;
+            if (this.finalLinkBlock) this.finalLinkBlock.classList.remove('hidden');
 
-            if (result.success) {
-                this.showFinalLink(result.link);
-            } else {
-                throw new Error(result.error);
-            }
-
-        } catch (error) {
-            this.showToast('Failed to generate link: ' + error.message, 'error');
+            this.showToast('Secure link generated', 'success');
+        } catch (err) {
+            console.error(err);
+            this.showToast('Failed to generate link: ' + err.message, 'error');
         }
     }
 
-    showFinalLink(link) {
-        const finalLinkSection = document.getElementById('finalLink');
-        const shareLinkInput = document.getElementById('shareLink');
-        
-        shareLinkInput.value = window.location.origin + window.location.pathname + '?download=' + this.currentFileId;
-        finalLinkSection.classList.remove('hidden');
-    }
-
     copyLinkToClipboard() {
-        const linkInput = document.getElementById('shareLink');
-        linkInput.select();
-        linkInput.setSelectionRange(0, 99999); // For mobile devices
-        
+        const el = this.shareLinkInput;
+        if (!el) return;
+        el.select();
+        el.setSelectionRange(0, 99999);
         try {
             document.execCommand('copy');
-            this.showToast('Link copied to clipboard!', 'success');
-        } catch (error) {
-            this.showToast('Failed to copy link', 'error');
+            this.showToast('Link copied to clipboard', 'success');
+        } catch (e) {
+            this.showToast('Copy failed', 'error');
         }
     }
 
     resetToUpload() {
-        // Reset all sections
-        document.getElementById('progressSection').classList.add('hidden');
-        document.getElementById('linkSection').classList.add('hidden');
-        document.getElementById('finalLink').classList.add('hidden');
-        
-        // Show upload section
-        document.getElementById('uploadSection').querySelector('.drop-zone').style.display = 'block';
-        
-        // Reset form
-        document.getElementById('fileInput').value = '';
-        document.getElementById('passwordProtect').checked = false;
-        document.getElementById('filePassword').classList.add('hidden');
-        document.getElementById('filePassword').value = '';
-        
-        // Reset progress bars
-        const progressBars = document.querySelectorAll('.progress-fill');
-        progressBars.forEach(bar => bar.style.width = '0%');
-        
-        // Reset step icons
-        const stepIcons = document.querySelectorAll('.step-icon');
-        stepIcons.forEach(icon => icon.classList.remove('active'));
-        
+        if (this.progressSection) this.progressSection.classList.add('hidden');
+        if (this.linkSection) this.linkSection.classList.add('hidden');
+        if (this.finalLinkBlock) this.finalLinkBlock.classList.add('hidden');
+        if (this.fileInput) this.fileInput.value = '';
         this.currentFileId = null;
-        this.uploadInProgress = false;
+        this.currentFileExt = '';
+        this.currentFileName = '';
+        // reset progress bars
+        this.setProgressBar(this.compressProgress, 0);
+        this.setProgressBar(this.encryptProgress, 0);
+        this.setProgressBar(this.uploadProgress, 0);
     }
 
-    checkDownloadLink() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const downloadId = urlParams.get('download');
-        
-        if (downloadId) {
-            this.switchToDownloadMode(downloadId);
-        }
-    }
+    // DOWNLOAD-PAGE: 
+    async checkDownloadLinkOnLoad() {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('download');
+        if (!id) return;
 
-    async switchToDownloadMode(fileId) {
-        // Hide upload section, show download section
-        document.getElementById('uploadSection').classList.remove('active');
-        document.getElementById('downloadSection').classList.add('active');
-
+        // show download UI, fetch info
         try {
-            // Get file information
-            const response = await fetch(`php/download.php?id=${fileId}&info=1`);
-            const result = await response.json();
-
-            if (result.success) {
-                this.setupDownloadInterface(fileId, result);
-            } else {
-                throw new Error(result.error);
+            // show download section, hide upload section
+            const uploadSection = document.getElementById('uploadSection');
+            if (uploadSection) uploadSection.classList.remove('active');
+            if (this.downloadSection) {
+                this.downloadSection.classList.remove('hidden');
+                this.downloadSection.classList.add('active');
             }
 
-        } catch (error) {
+            // query server for info
+            const extParam = params.get('ext') || '';
+            const infoResp = await fetch(`php/download.php?id=${encodeURIComponent(id)}&ext=${encodeURIComponent(extParam)}&info=1`);
+            if (!infoResp.ok) {
+                const text = await infoResp.text();
+                throw new Error(text || 'File not found');
+            }
+            const info = await infoResp.json();
+            if (!info || !info.success) throw new Error(info?.error || 'File not found');
+
+            // store for later
+            this.downloadInfo = info;
+
+            // populate UI
+            if (this.downloadFileName) this.downloadFileName.textContent = info.name || id;
+            const sizeInfo = `${this.formatFileSize(info.originalSize)} (compressed: ${this.formatFileSize(info.compressedSize)})`;
+            if (this.downloadFileInfo) this.downloadFileInfo.innerHTML = `${sizeInfo}<br><small>${info.algorithm || 'None'} • Ratio: ${Number(info.compressionRatio||0).toFixed(1)}%</small>`;
+
+            // password section
+            if (info.hasPassword) {
+                if (this.passwordSection) this.passwordSection.classList.remove('hidden');
+            } else {
+                if (this.passwordSection) this.passwordSection.classList.add('hidden');
+            }
+
+            // set download link (direct to php/download.php) — but handle password via POST
+            const direct = `php/download.php?id=${encodeURIComponent(id)}${info.ext ? '&ext=' + encodeURIComponent(info.ext) : ''}`;
+            if (this.downloadBtn) {
+                this.downloadBtn.setAttribute('href', direct);
+                // set filename suggested for download attribute to include the original name
+                if (info.name) this.downloadBtn.setAttribute('download', info.name);
+
+                // if password-protected, intercept click and submit form with password (POST)
+                this.downloadBtn.onclick = (e) => {
+                    if (this.downloadInfo && this.downloadInfo.hasPassword) {
+                        e.preventDefault();
+                        const pw = this.downloadPassword ? this.downloadPassword.value : '';
+                        if (!pw) {
+                            this.showToast('Please enter the password', 'error');
+                            return;
+                        }
+                        // create form and submit to download.php using POST
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = 'php/download.php';
+                        form.style.display = 'none';
+
+                        const fid = document.createElement('input');
+                        fid.name = 'id';
+                        fid.value = id;
+                        form.appendChild(fid);
+
+                        if (info.ext) {
+                            const fe = document.createElement('input');
+                            fe.name = 'ext';
+                            fe.value = info.ext;
+                            form.appendChild(fe);
+                        }
+
+                        const fp = document.createElement('input');
+                        fp.name = 'password';
+                        fp.value = pw;
+                        form.appendChild(fp);
+
+                        document.body.appendChild(form);
+                        form.submit();
+                    } else {
+                        
+                        
+                    }
+                };
+            }
+        } catch (err) {
+            console.error(err);
             this.showToast('File not found or expired', 'error');
-            // Redirect to upload page after delay
-            setTimeout(() => {
-                window.location.href = window.location.pathname;
-            }, 3000);
+            // redirect back to main upload after a short delay
+            setTimeout(() => { window.location.href = window.location.pathname; }, 2500);
         }
     }
 
-    setupDownloadInterface(fileId, fileInfo) {
-        document.getElementById('downloadFileName').textContent = fileInfo.name;
-        
-        const sizeInfo = `${this.formatFileSize(fileInfo.originalSize)} (compressed from ${this.formatFileSize(fileInfo.compressedSize)})`;
-        const algorithmInfo = `Compressed with ${fileInfo.algorithm} • Compression ratio: ${fileInfo.compressionRatio.toFixed(1)}%`;
-        
-        document.getElementById('downloadFileInfo').innerHTML = `
-            ${sizeInfo}<br>
-            <small>${algorithmInfo}</small>
-        `;
-
-        // Show password section if needed
-        if (fileInfo.hasPassword) {
-            document.getElementById('passwordSection').classList.remove('hidden');
-        }
-
-        // Store file ID for download
-        this.currentDownloadId = fileId;
-    }
-
-    async downloadFile() {
-        if (!this.currentDownloadId) return;
-
-        try {
-            const password = document.getElementById('downloadPassword')?.value || null;
-            
-            // Show download progress
-            document.getElementById('downloadForm').classList.add('hidden');
-            document.getElementById('downloadProgress').classList.remove('hidden');
-
-            // Simulate download progress
-            await this.simulateDownloadProgress();
-
-            // Actually download the file
-            const response = await fetch('php/download.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    id: this.currentDownloadId,
-                    password: password
-                })
-            });
-
-            if (response.ok) {
-                // The file will be downloaded automatically
-                this.showDownloadComplete();
-            } else {
-                const error = await response.json();
-                throw new Error(error.error);
-            }
-
-        } catch (error) {
-            this.showToast('Download failed: ' + error.message, 'error');
-            // Reset download form
-            document.getElementById('downloadForm').classList.remove('hidden');
-            document.getElementById('downloadProgress').classList.add('hidden');
-        }
-    }
-
-    async simulateDownloadProgress() {
-        const steps = ['downloadProgressBar', 'decryptProgressBar', 'decompressProgressBar'];
-        
-        for (let step of steps) {
-            for (let i = 0; i <= 100; i += 10) {
-                document.getElementById(step).style.width = i + '%';
-                await this.delay(100);
-            }
-        }
-    }
-
-    showDownloadComplete() {
-        document.getElementById('downloadProgress').classList.add('hidden');
-        document.getElementById('downloadComplete').classList.remove('hidden');
-    }
-
-    // Utility functions
-    formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
-
+    // small utilities
     showToast(message, type = 'info') {
-        const container = document.getElementById('toastContainer');
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.textContent = message;
-        
-        container.appendChild(toast);
-        
-        // Remove toast after 5 seconds
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 5000);
+        if (!this.toastContainer) return;
+        const t = document.createElement('div');
+        t.className = `toast ${type}`;
+        t.textContent = message;
+        this.toastContainer.appendChild(t);
+        setTimeout(() => { try { t.remove(); } catch(e){} }, 4500);
     }
 
-    delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+    formatFileSize(bytes) {
+        if (!bytes && bytes !== 0) return '0 Bytes';
+        const unit = 1024;
+        if (bytes < unit) return bytes + ' B';
+        if (bytes < unit * unit) return (bytes / unit).toFixed(2) + ' KB';
+        if (bytes < unit * unit * unit) return (bytes / (unit * unit)).toFixed(2) + ' MB';
+        return (bytes / (unit * unit * unit)).toFixed(2) + ' GB';
     }
+
+    delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 }
 
-// Initialize the application
-document.addEventListener('DOMContentLoaded', () => {
-    new DropLockerApp();
-});
+// initialize
+window.DropLockerApp = new DropLockerApp();

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔐 DropLocker - Secure File Sharing</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>DropLocker - Secure File Sharing</title>
     <link rel="stylesheet" href="css/style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -164,41 +164,9 @@
                         <input type="password" id="downloadPassword" class="form-input" placeholder="Enter password to download">
                     </div>
 
-                    <button id="downloadBtn" class="btn btn-primary">
+                    <a id="downloadBtn" class="btn btn-primary" href="#" download>
                         <i class="fas fa-download"></i> Download File
-                    </button>
-                </div>
-
-                <div id="downloadProgress" class="download-progress hidden">
-                    <div class="progress-step">
-                        <div class="step-icon"><i class="fas fa-download"></i></div>
-                        <div class="step-info">
-                            <span class="step-title">Downloading</span>
-                            <div class="progress-bar">
-                                <div id="downloadProgressBar" class="progress-fill"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="progress-step">
-                        <div class="step-icon"><i class="fas fa-unlock"></i></div>
-                        <div class="step-info">
-                            <span class="step-title">Decrypting</span>
-                            <div class="progress-bar">
-                                <div id="decryptProgressBar" class="progress-fill"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="progress-step">
-                        <div class="step-icon"><i class="fas fa-expand-arrows-alt"></i></div>
-                        <div class="step-info">
-                            <span class="step-title">Decompressing</span>
-                            <div class="progress-bar">
-                                <div id="decompressProgressBar" class="progress-fill"></div>
-                            </div>
-                        </div>
-                    </div>
+                    </a>
                 </div>
 
                 <div id="downloadComplete" class="download-complete hidden">
