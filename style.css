@@ -490,6 +490,16 @@ body {
     font-size: 0.9rem;
 }
 
+.footer .refLinks {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin: 1rem;
+    font-size: 2rem;
+}
+
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {
