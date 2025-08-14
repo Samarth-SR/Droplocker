@@ -51,7 +51,7 @@ class FileProcessor {
             $encryptionKey = $this->generateEncryptionKey();
             $encryptedFile = $this->uploadDir . 'encrypted_' . $fileId;
             
-            if (!$this->encryptFile($compressedFile, $encryptedFile, $encryptionKey)) {
+            if (!$this->encryptFile($compressedFile, '.gz', $encryptedFile, $encryptionKey)) {
                 unlink($tempFile);
                 unlink($compressedFile);
                 throw new Exception('Encryption failed');
@@ -59,7 +59,7 @@ class FileProcessor {
 
             // Clean up temporary files
             unlink($tempFile);
-            unlink($compressedFile);
+            unlink($compressedFile . '.gz');
 
             // Store metadata in database
             $this->storeFileMetadata($fileId, $originalName, $originalSize, 
@@ -83,22 +83,9 @@ class FileProcessor {
     }
 
     private function compressFile($inputFile, $outputFile) {
-        $command = escapeshellcmd($this->compressorPath) . ' compress ' . 
-                   escapeshellarg($inputFile) . ' ' . escapeshellarg($outputFile);
-        
-        $output = shell_exec($command . ' 2>&1');
-        
-        if ($output === null) {
-            return ['success' => false, 'error' => 'Failed to execute compressor'];
-        }
-
-        $result = json_decode($output, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return ['success' => false, 'error' => 'Invalid compressor response'];
-        }
-
-        return $result;
-    }
+        require_once 'compression_fallback.php';
+        return PHPCompressor::compress($inputFile, $outputFile);
+     }
 
     private function encryptFile($inputFile, $outputFile, $key) {
         $data = file_get_contents($inputFile);

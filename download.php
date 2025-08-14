@@ -119,22 +119,10 @@ class FileDownloader {
     }
 
     private function decompressFile($inputFile, $outputFile) {
-        $command = escapeshellcmd($this->compressorPath) . ' decompress ' . 
-                   escapeshellarg($inputFile) . ' ' . escapeshellarg($outputFile);
-        
-        $output = shell_exec($command . ' 2>&1');
-        
-        if ($output === null) {
-            return ['success' => false, 'error' => 'Failed to execute decompressor'];
-        }
-
-        $result = json_decode($output, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return ['success' => false, 'error' => 'Invalid decompressor response'];
-        }
-
-        return $result;
+        require_once 'compression_fallback.php';
+        return PHPCompressor::decompress($inputFile, $outputFile);
     }
+
 
     private function serveFile($filePath, $originalName) {
         if (!file_exists($filePath)) {
