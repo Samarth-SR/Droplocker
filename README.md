@@ -2,7 +2,7 @@
 
 A lightweight PHP-based encrypted file sharing tool with link expiry and optional password protection.
 
----
+
 
 ## Features
 
@@ -11,7 +11,7 @@ A lightweight PHP-based encrypted file sharing tool with link expiry and optiona
 * No database required (JSON metadata)
 * Minimal and intuitive UI
 
----
+
 
 ## Usage
 
@@ -19,7 +19,7 @@ A lightweight PHP-based encrypted file sharing tool with link expiry and optiona
 * Share the generated link.
 * Recipients can download before expiry.
 
----
+
 
 ## Future features
 
