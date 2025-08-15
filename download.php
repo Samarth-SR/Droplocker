@@ -44,8 +44,8 @@ if (isset($_GET['id']) && isset($_GET['info'])) {
         http_response_code(404);
         echo json_encode(['success' => false, 'error' => 'File not available']);
         exit;
-    }
-
+    }  
+     
     // check expiry
     if (!empty($meta['expiry']) && time() > (int)$meta['expiry']) {
         delete_file_and_meta($file_id);
