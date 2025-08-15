@@ -129,7 +129,7 @@ class DropLockerApp {
 
             await new Promise((resolve, reject) => {
                 const xhr = new XMLHttpRequest();
-                xhr.open('POST', 'php/upload.php', true);
+                xhr.open('POST', 'upload.php', true);
 
                 xhr.upload.onprogress = (event) => {
                     if (event.lengthComputable) {
@@ -225,14 +225,14 @@ class DropLockerApp {
         }
 
         const body = {
-            fileId: this.currentFileId,
-            extension: this.currentFileExt || '',
-            expiry: expiry,
-            password: password
+            "fileId": this.currentFileId,
+            "extension": this.currentFileExt || '',
+            "expiry": expiry,
+            "password": password
         };
 
         try {
-            const resp = await fetch('php/generate_link.php', {
+            const resp = await fetch('generate_link.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(body)
@@ -296,7 +296,7 @@ class DropLockerApp {
 
             // query server for info
             const extParam = params.get('ext') || '';
-            const infoResp = await fetch(`php/download.php?id=${encodeURIComponent(id)}&ext=${encodeURIComponent(extParam)}&info=1`);
+            const infoResp = await fetch(`download.php?id=${encodeURIComponent(id)}&ext=${encodeURIComponent(extParam)}&info=1`);
             if (!infoResp.ok) {
                 const text = await infoResp.text();
                 throw new Error(text || 'File not found');
@@ -320,7 +320,7 @@ class DropLockerApp {
             }
 
             // set download link (direct to php/download.php) — but handle password via POST
-            const direct = `php/download.php?id=${encodeURIComponent(id)}${info.ext ? '&ext=' + encodeURIComponent(info.ext) : ''}`;
+            const direct = `download.php?id=${encodeURIComponent(id)}${info.ext ? '&ext=' + encodeURIComponent(info.ext) : ''}`;
             if (this.downloadBtn) {
                 this.downloadBtn.setAttribute('href', direct);
                 // set filename suggested for download attribute to include the original name
@@ -338,28 +338,30 @@ class DropLockerApp {
                         // create form and submit to download.php using POST
                         const form = document.createElement('form');
                         form.method = 'POST';
-                        form.action = 'php/download.php';
+                        form.action = 'download.php';
                         form.style.display = 'none';
-
+                        
                         const fid = document.createElement('input');
                         fid.name = 'id';
                         fid.value = id;
                         form.appendChild(fid);
-
+                        
+                        
                         if (info.ext) {
                             const fe = document.createElement('input');
                             fe.name = 'ext';
                             fe.value = info.ext;
                             form.appendChild(fe);
                         }
-
+                        
                         const fp = document.createElement('input');
                         fp.name = 'password';
                         fp.value = pw;
                         form.appendChild(fp);
-
+                        
                         document.body.appendChild(form);
                         form.submit();
+                                                
                     } else {
                         
                         

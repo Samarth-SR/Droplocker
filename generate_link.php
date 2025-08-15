@@ -48,7 +48,7 @@ if (!is_array($input) || empty($input['fileId'])) {
 
 $file_id = sanitize_id($input['fileId']);
 $ext = isset($input['extension']) ? strtolower(preg_replace('/[^a-z0-9]/', '', (string)$input['extension'])) : '';
-$expirySeconds = isset($input['expiry']) ? (int)$input['expiry'] : 0;
+$expirySeconds = isset($input['expiry']) ? (int)$input['expiry'] : 86400; // default 24 hours
 $password = isset($input['password']) && $input['password'] !== '' ? (string)$input['password'] : null;
 
 $uploadCandidate = UPLOAD_DIR . $file_id . ($ext !== '' ? '.' . $ext : '');
@@ -117,12 +117,18 @@ if ($meta === null) {
     ];
     write_metadata($metaPath, $meta);
 }
+else {
+    // if meta file is present
+    $data = file_get_contents($metaPath); // Fetches the already exsisting metadata fiel
+    $meta = json_decode($data,true);
+}
+
 
 // update metadata with expiry and password options
 if ($expirySeconds > 0) {
-    $max = 60 * 60 * 24 * 30; // max 30 days by default
+    $max = 60 * 60 * 24 * 30; // max 30 days | default 24 hours
     $expirySeconds = min($expirySeconds, $max);
-    $meta['expiry'] = time() + $expirySeconds;
+    $meta['expiry'] = time() + $expirySeconds; // Give Current Time + 1 Hour
 } else {
     $meta['expiry'] = null;
 }

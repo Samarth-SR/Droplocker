@@ -113,12 +113,12 @@ if (!empty($meta['hasPassword'])) {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !$password) {
         // This endpoint requires POST with password
         http_response_code(403);
-        echo "Password required.";
+        echo json_encode(['success' => false, 'error' => 'Wrong Password']);
         exit;
     }
     if (empty($meta['password_hash']) || !password_verify($password, $meta['password_hash'])) {
         http_response_code(403);
-        echo "Invalid password.";
+        echo json_encode(['success' => false, 'error' => 'Wrong Password']);
         exit;
     }
 }
