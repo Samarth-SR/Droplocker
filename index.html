@@ -1,203 +1,245 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>DropLocker - Secure File Sharing</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
     <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <div class="logo">
-                <i class="fas fa-lock"></i>
-                <h1>DropLocker</h1>
-            </div>
-            <p class="tagline">Secure P2P File Sharing with Advanced Compression & Encryption</p>
-        </header>
-
-        <!-- Upload Interface -->
-        <div id="uploadSection" class="section active">
-            <div class="upload-area">
-                <div id="dropZone" class="drop-zone">
-                    <div class="drop-zone-content">
-                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                        <h3>Drop your file here or click to select</h3>
-                        <p class="subtitle">Files are compressed with C++ algorithms before encryption</p>
-                        <input type="file" id="fileInput" class="file-input" hidden>
-                        <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
-                            <i class="fa-solid fa-file-arrow-up" style="color: #ffffff; padding-top:1rem; padding-right:0.5rem;"></i>
-                            Choose File
-                        </button>
-                    </div>
-                </div>
-
-                <!-- File Processing Progress -->
-                <div id="progressSection" class="progress-section hidden">
-                    <div class="file-info">
-                        <i class="fas fa-file-alt"></i>
-                        <div class="file-details">
-                            <span id="fileName" class="file-name"></span>
-                            <span id="fileSize" class="file-size"></span>
-                        </div>
-                    </div>
-                    
-                    <div class="progress-container">
-                        <div class="progress-step">
-                            <div class="step-icon"><i class="fas fa-compress"></i></div>
-                            <div class="step-info">
-                                <span class="step-title">Compressing</span>
-                                <div class="progress-bar">
-                                    <div id="compressProgress" class="progress-fill"></div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="progress-step">
-                            <div class="step-icon"><i class="fas fa-shield-alt"></i></div>
-                            <div class="step-info">
-                                <span class="step-title">Encrypting</span>
-                                <div class="progress-bar">
-                                    <div id="encryptProgress" class="progress-fill"></div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="progress-step">
-                            <div class="step-icon"><i class="fas fa-upload"></i></div>
-                            <div class="step-info">
-                                <span class="step-title">Uploading</span>
-                                <div class="progress-bar">
-                                    <div id="uploadProgress" class="progress-fill"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Link Generation -->
-                <div id="linkSection" class="link-section hidden">
-                    <div class="success-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <h3>Secure Link Generated!</h3>
-                    
-                    <div class="compression-stats">
-                        <div class="stat">
-                            <span class="stat-label">Original Size:</span>
-                            <span id="originalSize" class="stat-value"></span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Compressed Size:</span>
-                            <span id="compressedSize" class="stat-value"></span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Compression Ratio:</span>
-                            <span id="compressionRatio" class="stat-value"></span>
-                        </div>
-                    </div>
-
-                    <div class="link-options">
-                        <div class="option-group">
-                            <label for="expiryTime">Link Expires In:</label>
-                            <select id="expiryTime" class="form-select">
-                                <option value="3600">1 Hour</option>
-                                <option value="86400" selected>24 Hours</option>
-                                <option value="604800">7 Days</option>
-                            </select>
-                        </div>
-                        
-                        <div class="option-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="passwordProtect">
-                                <span class="checkmark"></span>
-                                Password Protection
-                            </label>
-                            <input type="password" id="filePassword" class="form-input hidden" placeholder="Enter password">
-                        </div>
-                    </div>
-
-                    <button id="generateLink" class="btn btn-primary">
-                        <i class="fas fa-link"></i> Generate Secure Link
-                    </button>
-
-                    <div id="finalLink" class="final-link hidden">
-                        <div class="link-container">
-                            <input type="text" id="shareLink" class="link-input" readonly>
-                            <button id="copyLink" class="btn btn-secondary">
-                                <i class="fas fa-copy"></i> Copy
-                            </button>
-                        </div>
-                        <p class="link-info">Share this link with your recipient. It will auto-delete after download or expiry.</p>
-                    </div>
-
-                    <button id="newUpload" class="btn btn-outline">
-                        <i class="fas fa-plus"></i> Upload Another File
-                    </button>
-                </div>
-            </div>
+      <!-- Header -->
+      <header class="header">
+        <div class="logo">
+          <i class="fas fa-lock"></i>
+          <h1>DropLocker</h1>
         </div>
+        <p class="tagline">
+          Secure P2P File Sharing with Advanced Compression & Encryption
+        </p>
+      </header>
 
-        <!-- Download Interface -->
-        <div id="downloadSection" class="section hidden">
-            <div class="download-area">
-                <div class="download-icon">
-                    <i class="fas fa-download"></i>
-                </div>
-                <h2>Secure File Download</h2>
-                <p class="download-subtitle">This file has been compressed and encrypted for secure transfer</p>
-
-                <div id="downloadForm" class="download-form">
-                    <div class="file-preview">
-                        <div class="file-icon">
-                            <i class="fas fa-file"></i>
-                        </div>
-                        <div class="file-info">
-                            <h4 id="downloadFileName">Loading...</h4>
-                            <p id="downloadFileInfo">Retrieving file information...</p>
-                        </div>
-                    </div>
-
-                    <div id="passwordSection" class="password-section hidden">
-                        <label for="downloadPassword">Password Required:</label>
-                        <input type="password" id="downloadPassword" class="form-input" placeholder="Enter password to download">
-                    </div>
-
-                    <a id="downloadBtn" class="btn btn-primary" href="#" download>
-                        <i class="fas fa-download"></i> Download File
-                    </a>
-                </div>
-
-                <div id="downloadComplete" class="download-complete hidden">
-                    <div class="success-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <h3>Download Complete!</h3>
-                    <p>The file has been successfully downloaded and decompressed.</p>
-                    <p class="security-note">⚠️ This link is now invalid and cannot be used again.</p>
-                </div>
+      <!-- Upload Interface -->
+      <div id="uploadSection" class="section active">
+        <div class="upload-area">
+          <div id="dropZone" class="drop-zone">
+            <div class="drop-zone-content">
+              <i class="fas fa-cloud-upload-alt upload-icon"></i>
+              <h3>Drop your file here or click to select</h3>
+              <p class="subtitle">
+                Files are compressed with C++ algorithms before encryption
+              </p>
+              <input type="file" id="fileInput" class="file-input" hidden />
+              <button
+                class="btn btn-primary"
+                onclick="document.getElementById('fileInput').click()"
+              >
+                <i
+                  class="fa-solid fa-file-arrow-up"
+                  style="
+                    color: #ffffff;
+                    padding-top: 1rem;
+                    padding-right: 0.5rem;
+                  "
+                ></i>
+                Choose File
+              </button>
             </div>
+          </div>
+
+          <!-- File Processing Progress -->
+          <div id="progressSection" class="progress-section hidden">
+            <div class="file-info">
+              <i class="fas fa-file-alt"></i>
+              <div class="file-details">
+                <span id="fileName" class="file-name"></span>
+                <span id="fileSize" class="file-size"></span>
+              </div>
+            </div>
+
+            <div class="progress-container">
+              <div class="progress-step">
+                <div class="step-icon"><i class="fas fa-compress"></i></div>
+                <div class="step-info">
+                  <span class="step-title">Compressing</span>
+                  <div class="progress-bar">
+                    <div id="compressProgress" class="progress-fill"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="progress-step">
+                <div class="step-icon"><i class="fas fa-shield-alt"></i></div>
+                <div class="step-info">
+                  <span class="step-title">Encrypting</span>
+                  <div class="progress-bar">
+                    <div id="encryptProgress" class="progress-fill"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="progress-step">
+                <div class="step-icon"><i class="fas fa-upload"></i></div>
+                <div class="step-info">
+                  <span class="step-title">Uploading</span>
+                  <div class="progress-bar">
+                    <div id="uploadProgress" class="progress-fill"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Link Generation -->
+          <div id="linkSection" class="link-section hidden">
+            <div class="success-icon">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>Secure Link Generated!</h3>
+
+            <div class="compression-stats">
+              <div class="stat">
+                <span class="stat-label">Original Size:</span>
+                <span id="originalSize" class="stat-value"></span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Compressed Size:</span>
+                <span id="compressedSize" class="stat-value"></span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Compression Ratio:</span>
+                <span id="compressionRatio" class="stat-value"></span>
+              </div>
+            </div>
+
+            <div class="link-options">
+              <div class="option-group">
+                <label for="expiryTime">Link Expires In:</label>
+                <select id="expiryTime" class="form-select">
+                  <option value="3600">1 Hour</option>
+                  <option value="86400" selected>24 Hours</option>
+                  <option value="604800">7 Days</option>
+                </select>
+              </div>
+
+              <div class="option-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="passwordProtect" />
+                  <span class="checkmark"></span>
+                  Password Protection
+                </label>
+                <input
+                  type="password"
+                  id="filePassword"
+                  class="form-input hidden"
+                  placeholder="Enter password"
+                />
+              </div>
+            </div>
+
+            <button id="generateLink" class="btn btn-primary">
+              <i class="fas fa-link"></i> Generate Secure Link
+            </button>
+
+            <div id="finalLink" class="final-link hidden">
+              <div class="link-container">
+                <input type="text" id="shareLink" class="link-input" readonly />
+                <button id="copyLink" class="btn btn-secondary">
+                  <i class="fas fa-copy"></i> Copy
+                </button>
+              </div>
+              <p class="link-info">
+                Share this link with your recipient. It will auto-delete after
+                download or expiry.
+              </p>
+            </div>
+
+            <button id="newUpload" class="btn btn-outline">
+              <i class="fas fa-plus"></i> Upload Another File
+            </button>
+          </div>
         </div>
+      </div>
 
-        <!-- Footer -->
-        <footer class="footer">
-            <div class="refLinks">
-                <a href="http://github.com/Samarth-SR/Droplocker/" target="_blank">
-            <i class="fa-brands fa-github" style="color: #ffffff;"></i>
-            </a>
-            <a href="https://www.linkedin.com/in/samarth-subramanya-r-a97b61275/" target="_blank">
-                <i class="fa-brands fa-linkedin"  style="color: #ffffff; padding-left: 1rem;"></i>
-            </a>
+      <!-- Download Interface -->
+      <div id="downloadSection" class="section hidden">
+        <div class="download-area">
+          <div class="download-icon">
+            <i class="fas fa-download"></i>
+          </div>
+          <h2>Secure File Download</h2>
+          <p class="download-subtitle">
+            This file has been compressed and encrypted for secure transfer
+          </p>
+
+          <div id="downloadForm" class="download-form">
+            <div class="file-preview">
+              <div class="file-icon">
+                <i class="fas fa-file"></i>
+              </div>
+              <div class="file-info">
+                <h4 id="downloadFileName">Loading...</h4>
+                <p id="downloadFileInfo">Retrieving file information...</p>
+              </div>
             </div>
-            <p>&copy; 2025 DropLocker - Powered by C++ Compression & Web Encryption</p>
-        </footer>
+
+            <div id="passwordSection" class="password-section hidden">
+              <label for="downloadPassword">Password Required:</label>
+              <input
+                type="password"
+                id="downloadPassword"
+                class="form-input"
+                placeholder="Enter password to download"
+              />
+            </div>
+
+            <a id="downloadBtn" class="btn btn-primary" href="#" download>
+              <i class="fas fa-download"></i> Download File
+            </a>
+          </div>
+
+          <div id="downloadComplete" class="download-complete hidden">
+            <div class="success-icon">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>Download Complete!</h3>
+            <p>The file has been successfully downloaded and decompressed.</p>
+            <p class="security-note">
+              ⚠️ This link is now invalid and cannot be used again.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <div class="refLinks">
+          <a href="http://github.com/Samarth-SR/Droplocker/" target="_blank">
+            <i class="fa-brands fa-github" style="color: #ffffff"></i>
+          </a>
+          <a
+            href="https://www.linkedin.com/in/samarth-subramanya-r-a97b61275/"
+            target="_blank"
+          >
+            <i
+              class="fa-brands fa-linkedin"
+              style="color: #ffffff; padding-left: 1rem"
+            ></i>
+          </a>
+        </div>
+        <p>
+          &copy; 2025 DropLocker - Powered by C++ Compression & Web Encryption
+        </p>
+      </footer>
     </div>
 
     <!-- Toast Notifications -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="js/app.js"></script>
-</body>
+    <script src="app.js"></script>
+  </body>
 </html>
